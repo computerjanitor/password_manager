@@ -1,0 +1,75 @@
+### Will organize and store passwords that we input ###
+### Will also store usernames and account name/website ###
+### All data will be stored in a text-based file locally and encrypted ###
+### .txt file is stored in the same directory as this program ###
+
+### import cryptography module to encrypt password file ###
+from cryptography.fernet import Fernet
+
+### create an encrypted key ###
+'''
+def write_key():
+	key = Fernet.generate_key()
+	### wb mode stands for write bytes mode ###
+	with open("key.key", "wb") as key_file:
+		key_file.write(key)'''
+
+### Need to load the key ###
+
+def load_key():
+	file = open("key.key", "rb")
+	key = file.read()
+	file.close()
+	return key
+
+
+### Request master password from user ###
+
+master_pwd = input("Type Master Password: ")
+key = load_key() + master_pwd.encode()
+fer = Fernet(key)
+
+
+### Ask the user if they want to list out their currently ###
+### stored passwords or add a new one ###
+
+def view():
+	with open("passwords.txt", "r") as f:
+		for line in f.readlines():
+			data = line.rstrip()
+			name, un, pwd = data.split("|")
+			print("Account Name:", name, "| Username:", fer.decrypt(un.encode()).decode(), "| Password:", fer.decrypt(pwd.encode()).decode())
+
+def add():
+	### Create a new file if the password doesn't already exist ###
+	### Add the password to the file ###
+	### Get UN, PWD, ACCT name ###
+
+	name = input("Account Name: ")
+	un = input("Username: ")
+	pwd = input("Password: ")
+
+	### with will open the file and close it once complete ###
+	### as f assigns the file to the variable f ###
+	### file = open("passwords.txt", "a") ###
+	### file.close() ###
+	### could work but may cause problems when trying to open the file elsewhere ###
+	### w mode: overrides specified file; r mode: read only - does not write to file; a mode: append or add to the end of an existing file ###
+	with open("passwords.txt", "a") as f:
+		f.write(name + "|" + fer.encrypt(un.encode()).decode() + "|" + fer.encrypt(pwd.encode()).decode() + "\n")
+
+
+while True:
+	mode = input("Would you like to add new password or view existing one? Type view or add or q to quit: ").lower()
+	if mode == "q":
+		break
+
+	elif mode == "view":
+		view()
+
+	elif mode == "add":
+		add()
+
+	else:
+		print("Please enter a valid response.")
+		continue
